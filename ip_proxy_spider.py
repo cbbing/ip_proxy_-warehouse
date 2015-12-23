@@ -20,16 +20,19 @@ from multiprocessing import Pool
 
 
 from util.CodeConvert import *
-from util.helper import *
+from util.helper import fn_timer as fn_timer_
+from config import engine, mysql_table_ip
 
 
-
-class IP_Proxy:
+class IP_Proxy_Spider:
     def __init__(self):
 
         self.count = 10
         self.ip_items = []
         self.dir_path = './data/'
+
+        self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36'}
+
 
     #
     def parse(self):
@@ -75,9 +78,10 @@ class IP_Proxy:
 
         def parse_one_page(url):
             try:
-                page = urllib.urlopen(url)
-                data = page.read()
-                soup = BeautifulSoup(data, "html5lib")
+                r = requests.get(url, headers=self.headers, timeout=10)
+                #page = urllib.urlopen(url)
+                #data = page.read()
+                soup = BeautifulSoup(r.text, "html5lib")
                 print soup.get_text()
                 body_data = soup.find('table', attrs={'class':'table table-bordered table-striped'})
                 res_list = body_data.find_all('tr')
@@ -106,40 +110,26 @@ class IP_Proxy:
         print 'kuaidaili success'
 
     # 西刺代理
-    def parse_kuaidaili(self):
-        url_xici = 'http://www.xicidaili.com/nn/1'
-
-    # 西刺代理
-    def parse_kuaidaili(self):
+    def parse_xici(self):
         url_xici = 'http://www.xicidaili.com/nn/1'
 
     # 有代理
-    def parse_kuaidaili(self):
+    def parse_youdaili(self):
         url_xici = 'http://www.youdaili.net/Daili/guonei/'
 
+    # 66ip代理
+    def parse_66ip(self):
+        url_xici = 'http://www.66ip.cn/areaindex_1/1.html'
 
 
+    @fn_timer_
     def test_ip_speed(self):
-
-        # t0l = time.time()
-        # pooll = Pool(processes=20)
-        # for item in self.ip_items:
-        #     pooll.apply(self.ping_one_ip, args=(item.ip,))
-        # #pooll.map(self.ping_one_ip, self.ip_items)
-        # pooll.close()
-        # pooll.join
-
-        t0 = time.time()
 
         #多线程
         pool = ThreadPool(processes=20)
         pool.map(self.ping_one_ip, range(len(self.ip_items)))
         pool.close()
         pool.join()
-
-        t1 = time.time()
-        #print "Total time running multi: %s seconds" % ( str(t0-t0l))
-        print "Total time running multi: %s seconds" % ( str(t1-t0))
 
         #单线程
         # for index in range(len(self.ip_items)):
@@ -217,21 +207,15 @@ class IP_Proxy:
 
         #df = df.applymap(lambda x : encode_wrap(x))
         print df[:10]
-
         df = df.sort_index(by='Speed')
 
-        now_data = GetNowDate()
-
-        file_name = self.dir_path +'ip_proxy_' + now_data
-
-        df.to_csv(file_name + '.csv')
+        #file_name = self.dir_path +'ip_proxy_' + GetNowDate()
+        #df.to_csv(file_name + '.csv')
         #df.to_excel( 'ip.xlsx', index=False)
 
-        # writer = pd.ExcelWriter(file_name+'.xlsx')
-        # df.to_excel(writer,'Sheet1')
-        # writer.save()
+        df.to_sql(mysql_table_ip, engine, if_exists='append', index=False)
 
-    @fn_timer
+    @fn_timer_
     def run(self):
 
         self.parse()
@@ -251,5 +235,5 @@ class IPItem:
         self.speed = -1 #速度
 
 if __name__ == "__main__":
-    ip_proxy = IP_Proxy()
-    ip_proxy.run()
+    spider = IP_Proxy_Spider()
+    spider.run()
