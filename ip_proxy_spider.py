@@ -27,7 +27,8 @@ from config import engine, mysql_table_ip
 class IP_Proxy_Spider:
     def __init__(self):
 
-        self.count = 10
+        self.count = 3
+        self.wait_time = 5 # second
         self.ip_items = []
         self.dir_path = './data/'
 
@@ -37,28 +38,31 @@ class IP_Proxy_Spider:
     #
     def parse(self):
         #self.parse_haodaili()
-        self.parse_kuaidaili()
+        #self.parse_kuaidaili()
+        self.parse_xici()
 
     # 好代理
     def parse_haodaili(self):
 
         def parse_one_page(url):
             try:
-                page = urllib.urlopen(url)
-                data = page.read()
-                soup = BeautifulSoup(data, "html5lib")
+                r = requests.get(url, headers=self.headers, timeout=10)
+                # page = urllib.urlopen(url)
+                # data = page.read()
+                soup = BeautifulSoup(r.text, "html5lib")
                 #print soup.get_text()
                 body_data = soup.find('table', attrs={'class':'content_table'})
                 res_list = body_data.find_all('tr')
                 for res in res_list:
                     each_data = res.find_all('td')
                     if len(each_data) > 3 and not 'IP' in each_data[0].get_text() and '.' in each_data[0].get_text():
-                        print each_data[0].get_text().strip(), each_data[1].get_text().strip()
                         item = IPItem()
                         item.ip = each_data[0].get_text().strip()
                         item.port = each_data[1].get_text().strip()
                         item.addr = each_data[2].get_text().strip()
                         item.type = each_data[3].get_text().strip()
+
+                        print item.get_info()
                         if item.type.lower() == "http" or item.type.lower() == "https":
                             self.ip_items.append(item)
             except Exception,e:
@@ -68,10 +72,10 @@ class IP_Proxy_Spider:
         for i in range(1, self.count+1):
             url = url_haodaili.format(pid=i)
             parse_one_page(url)
-            if (i < self.count+1):
-                print 'next page:', i+1
-                time.sleep(3)
 
+            self._page_wait(i)
+
+        print 'haodaili success: {} have get {} items'.format('\n', len(self.ip_items))
 
     # 快代理
     def parse_kuaidaili(self):
@@ -88,38 +92,144 @@ class IP_Proxy_Spider:
                 for res in res_list:
                     each_data = res.find_all('td')
                     if len(each_data) > 3 and not 'IP' in each_data[0].get_text() and '.' in each_data[0].get_text():
-                        print each_data[0].get_text().strip(), each_data[1].get_text().strip()
                         item = IPItem()
                         item.ip = each_data[0].get_text().strip()
                         item.port = each_data[1].get_text().strip()
                         item.addr = each_data[4].get_text().strip()
                         item.type = each_data[3].get_text().strip().lower()
                         item.anonymous = each_data[2].get_text().strip()
+
+                        print item.get_info()
                         if item.type == "http" or item.type == "https":
                             self.ip_items.append(item)
             except Exception,e:
                 print e
 
         url_kuaidaili = 'http://www.kuaidaili.com/free/inha/{pid}/'
-        for i in range(2, self.count+1):
+        for i in range(1, self.count+1):
             url = url_kuaidaili.format(pid=i)
             parse_one_page(url)
-            if (i < self.count+1):
-                print 'next page:', i+1
-                time.sleep(5)
-        print 'kuaidaili success'
+
+            self._page_wait(i)
+
+        print 'kuaidaili success: {} have get {} items'.format('\n', len(self.ip_items))
 
     # 西刺代理
     def parse_xici(self):
-        url_xici = 'http://www.xicidaili.com/nn/1'
+
+        def parse_one_page(url):
+            try:
+                r = requests.get(url, headers=self.headers, timeout=10)
+                soup = BeautifulSoup(r.text, "html5lib")
+                print soup.get_text()
+                body_data = soup.find('table', attrs={'id':'ip_list'})
+                res_list = body_data.find_all('tr')
+                for res in res_list:
+                    each_data = res.find_all('td')
+                    if len(each_data) > 6 and '.' in each_data[2].get_text():
+
+                        item = IPItem()
+                        item.ip = each_data[2].get_text().strip()
+                        item.port = each_data[3].get_text().strip()
+                        item.addr = each_data[4].get_text().strip()
+                        item.type = each_data[6].get_text().strip().lower()
+                        item.anonymous = each_data[5].get_text().strip()
+                        print item.get_info()
+
+                        print each_data[1].get_text().strip(), each_data[1].get_text().strip()
+                        if item.type == "http" or item.type == "https":
+                            self.ip_items.append(item)
+
+            except Exception,e:
+                print e
+
+        url_xici = 'http://www.xicidaili.com/nn/{pid}'
+        for i in range(1, self.count+1):
+            url = url_xici.format(pid=i)
+            parse_one_page(url)
+
+            self._page_wait(i)
+
+
+        print 'xicidaili success: {} have get {} items'.format('\n', len(self.ip_items))
 
     # 有代理
     def parse_youdaili(self):
-        url_xici = 'http://www.youdaili.net/Daili/guonei/'
+
+        def parse_one_page(url):
+            try:
+                r = requests.get(url, headers=self.headers, timeout=10)
+                soup = BeautifulSoup(r.text, "html5lib")
+                print soup.get_text()
+                body_data = soup.find('table', attrs={'id':'ip_list'})
+                res_list = body_data.find_all('tr')
+                for res in res_list:
+                    each_data = res.find_all('td')
+                    if len(each_data) > 6 and '.' in each_data[2].get_text():
+
+                        item = IPItem()
+                        item.ip = each_data[2].get_text().strip()
+                        item.port = each_data[3].get_text().strip()
+                        item.addr = each_data[4].get_text().strip()
+                        item.type = each_data[6].get_text().strip().lower()
+                        item.anonymous = each_data[5].get_text().strip()
+                        print item.get_info()
+
+                        print each_data[1].get_text().strip(), each_data[1].get_text().strip()
+                        if item.type == "http" or item.type == "https":
+                            self.ip_items.append(item)
+
+            except Exception,e:
+                print e
+
+        def get_urls(url_origin):
+
+            urls = []
+
+            try:
+                r = requests.get(url_origin, header=self.headers)
+                soup = BeautifulSoup(r.text, "html5lib")
+                ulNewsList= soup.find('ul', {'class':'newslist_line'})
+                if ulNewsList:
+                    liAll = ulNewsList.find_all('li')
+                    for li in liAll:
+                        try:
+                            data_a = li.find('a')
+                            href = data_a['href']
+                            urls.append(href)
+                        except Exception,e:
+                            print e
+            except Exception,e:
+                print e
+
+            return urls
+
+
+        url_youdaili_origin = 'http://www.youdaili.net/Daili/guonei/'
+        urls = get_urls(url_youdaili_origin)
+
+        #ips = re.findall('\d+.\d+.\d+:\d+@HTTPS', r.text)
+
+        for i in range(1, self.count+1):
+            #url = url_xici.format(pid=i)
+            #parse_one_page(url)
+
+            self._page_wait(i)
+
+
+        print 'youdaili success: {} have get {} items'.format('\n', len(self.ip_items))
 
     # 66ip代理
     def parse_66ip(self):
         url_xici = 'http://www.66ip.cn/areaindex_1/1.html'
+
+
+    def _page_wait(self, now_page):
+        if (now_page < self.count):
+                print 'next page:', now_page+1
+                time.sleep(self.wait_time)
+        else:
+            print 'parse finish'
 
 
     @fn_timer_
@@ -233,6 +343,8 @@ class IPItem:
         self.type = ''  # 类型:http, https
         self.anonymous = '' # 匿名度
         self.speed = -1 #速度
+    def get_info(self):
+        return '{}://{}:{}  {}'.format(self.type, self.ip, self.port, self.addr)
 
 if __name__ == "__main__":
     spider = IP_Proxy_Spider()
