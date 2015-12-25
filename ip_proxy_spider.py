@@ -55,17 +55,20 @@ class IP_Proxy_Spider:
                 res_list = body_data.find_all('tr')
                 for res in res_list:
                     each_data = res.find_all('td')
-                    if len(each_data) > 3 and not 'IP' in each_data[0].get_text() and '.' in each_data[0].get_text():
+                    if len(each_data) > 4 and not 'IP' in each_data[0].get_text() and '.' in each_data[0].get_text():
                         item = IPItem()
                         item.ip = each_data[0].get_text().strip()
                         item.port = each_data[1].get_text().strip()
                         item.addr = each_data[2].get_text().strip()
-                        item.type = each_data[3].get_text().strip()
+                        item.type = each_data[3].get_text().strip().lower()
+                        item.anonymous = each_data[4].get_text().strip()
                         item.source = 'www.haodailiip.com'
 
-                        print item.get_info()
-                        if item.type.lower() == "http" or item.type.lower() == "https":
+                        if 'http' in item.type and '匿' in item.anonymous:
+                            item.anonymous = '高匿' #规整化
+                            print item.get_info()
                             self.ip_items.append(item)
+
             except Exception,e:
                 print e
 
@@ -76,7 +79,7 @@ class IP_Proxy_Spider:
 
             self._page_wait(i)
 
-        print 'haodaili success: {} have get {} items'.format('\n', len(self.ip_items))
+        print 'haodaili success: {} have get {} items'.format('', len(self.ip_items))
 
     # 快代理
     def parse_kuaidaili(self):
@@ -100,9 +103,11 @@ class IP_Proxy_Spider:
                         item.anonymous = each_data[2].get_text().strip()
                         item.source = 'www.kuaidaili.com'
 
-                        print item.get_info()
-                        if item.type == "http" or item.type == "https":
+                        if 'http' in item.type and '匿' in item.anonymous:
+                            item.anonymous = '高匿' #规整化
+                            print item.get_info()
                             self.ip_items.append(item)
+
             except Exception,e:
                 print e
 
@@ -113,7 +118,7 @@ class IP_Proxy_Spider:
 
             self._page_wait(i)
 
-        print 'kuaidaili success: {} have get {} items'.format('\n', len(self.ip_items))
+        print 'kuaidaili success: {} have get {}items'.format('', len(self.ip_items))
 
     # 西刺代理
     def parse_xici(self):
@@ -139,8 +144,11 @@ class IP_Proxy_Spider:
                         item.source = 'www.xicidaili.com'
                         print item.get_info()
 
-                        if item.type == "http" or item.type == "https":
+                        if 'http' in item.type and '匿' in item.anonymous:
+                            item.anonymous = '高匿' #规整化
+                            print item.get_info()
                             self.ip_items.append(item)
+
 
             except Exception,e:
                 print e
@@ -153,7 +161,7 @@ class IP_Proxy_Spider:
             self._page_wait(i)
 
 
-        print 'xicidaili success: {} have get {} items'.format('\n', len(self.ip_items))
+        print 'xicidaili success: {} have get {} items'.format('', len(self.ip_items))
 
     # # 有代理
     # def parse_youdaili(self):
@@ -243,9 +251,9 @@ class IP_Proxy_Spider:
                         item.anonymous = each_data[3].get_text().strip()
                         item.source = 'www.66ip.cn'
 
-                        print item.get_info()
-
-                        if item.type == "http" or item.type == "https":
+                        if 'http' in item.type and '匿' in item.anonymous:
+                            item.anonymous = '高匿' #规整化
+                            print item.get_info()
                             self.ip_items.append(item)
 
             except Exception,e:
@@ -258,7 +266,7 @@ class IP_Proxy_Spider:
 
             self._page_wait(i)
 
-        print '66ip success: {} have get {} items'.format('\n', len(self.ip_items))
+        print '66ip success: {} have get {} items'.format('', len(self.ip_items))
 
 
     def _page_wait(self, now_page):
@@ -384,7 +392,8 @@ class IPItem:
         self.speed = -1 #速度
         self.source = ''
     def get_info(self):
-        return encode_wrap('{}://{}:{}  {}'.format(self.type, self.ip, self.port, self.addr))
+        return encode_wrap('{0}://{1}:{2}; {3},{4}, {5}ms, {6}'.format(
+            self.type, self.ip, self.port, self.addr, self.anonymous, self.speed, self.source))
 
 if __name__ == "__main__":
     spider = IP_Proxy_Spider()
