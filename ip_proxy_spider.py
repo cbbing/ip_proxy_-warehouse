@@ -27,7 +27,7 @@ from config import engine, mysql_table_ip
 class IP_Proxy_Spider:
     def __init__(self):
 
-        self.count = 10
+        self.count = 1
         self.wait_time = 5 # second
         self.ip_items = []
         self.dir_path = './data/'
@@ -48,6 +48,7 @@ class IP_Proxy_Spider:
         def parse_one_page(url):
             try:
                 r = requests.get(url, headers=self.headers, timeout=10)
+                r.encoding='utf8'
                 soup = BeautifulSoup(r.text, "html5lib")
                 #print soup.get_text()
                 body_data = soup.find('table', attrs={'class':'content_table'})
@@ -83,8 +84,9 @@ class IP_Proxy_Spider:
         def parse_one_page(url):
             try:
                 r = requests.get(url, headers=self.headers, timeout=10)
+                r.encoding='utf8'
                 soup = BeautifulSoup(r.text, "html5lib")
-                print soup.get_text()
+                #print soup.get_text()
                 body_data = soup.find('table', attrs={'class':'table table-bordered table-striped'})
                 res_list = body_data.find_all('tr')
                 for res in res_list:
@@ -119,8 +121,9 @@ class IP_Proxy_Spider:
         def parse_one_page(url):
             try:
                 r = requests.get(url, headers=self.headers, timeout=10)
+                r.encoding='utf8'
                 soup = BeautifulSoup(r.text, "html5lib")
-                print soup.get_text()
+                #print soup.get_text()
                 body_data = soup.find('table', attrs={'id':'ip_list'})
                 res_list = body_data.find_all('tr')
                 for res in res_list:
@@ -225,7 +228,7 @@ class IP_Proxy_Spider:
                 r = requests.get(url, headers=self.headers, timeout=10)
                 r.encoding = 'utf8'
                 soup = BeautifulSoup(r.text, "html5lib")
-                print soup.get_text()
+                #print soup.get_text()
                 body_data = soup.find('table', attrs={'width':'100%'})
                 res_list = body_data.find_all('tr')
                 for res in res_list:
@@ -381,7 +384,7 @@ class IPItem:
         self.speed = -1 #速度
         self.source = ''
     def get_info(self):
-        return '{}://{}:{}  {}'.format(self.type, self.ip, self.port, self.addr)
+        return encode_wrap('{}://{}:{}  {}'.format(self.type, self.ip, self.port, self.addr))
 
 if __name__ == "__main__":
     spider = IP_Proxy_Spider()
