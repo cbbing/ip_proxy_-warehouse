@@ -27,7 +27,7 @@ from config import engine, mysql_table_ip
 class IP_Proxy_Spider:
     def __init__(self):
 
-        self.count = 1
+        self.count = 10
         self.wait_time = 5 # second
         self.ip_items = []
         self.dir_path = './data/'
@@ -356,7 +356,7 @@ class IP_Proxy_Spider:
 
         #df = df.applymap(lambda x : encode_wrap(x))
         print df[:10]
-        df = df.sort_index(by='Speed')
+        #df = df.sort_index(by='Speed')
 
         #file_name = self.dir_path +'ip_proxy_' + GetNowDate()
         #df.to_csv(file_name + '.csv')
