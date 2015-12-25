@@ -27,7 +27,7 @@ from config import engine, mysql_table_ip
 class IP_Proxy_Spider:
     def __init__(self):
 
-        self.count = 3
+        self.count = 10
         self.wait_time = 5 # second
         self.ip_items = []
         self.dir_path = './data/'
@@ -37,9 +37,10 @@ class IP_Proxy_Spider:
 
     #
     def parse(self):
-        #self.parse_haodaili()
-        #self.parse_kuaidaili()
+        self.parse_haodaili()
+        self.parse_kuaidaili()
         self.parse_xici()
+        self.parse_66ip()
 
     # 好代理
     def parse_haodaili(self):
@@ -47,8 +48,6 @@ class IP_Proxy_Spider:
         def parse_one_page(url):
             try:
                 r = requests.get(url, headers=self.headers, timeout=10)
-                # page = urllib.urlopen(url)
-                # data = page.read()
                 soup = BeautifulSoup(r.text, "html5lib")
                 #print soup.get_text()
                 body_data = soup.find('table', attrs={'class':'content_table'})
@@ -61,6 +60,7 @@ class IP_Proxy_Spider:
                         item.port = each_data[1].get_text().strip()
                         item.addr = each_data[2].get_text().strip()
                         item.type = each_data[3].get_text().strip()
+                        item.source = 'www.haodailiip.com'
 
                         print item.get_info()
                         if item.type.lower() == "http" or item.type.lower() == "https":
@@ -83,8 +83,6 @@ class IP_Proxy_Spider:
         def parse_one_page(url):
             try:
                 r = requests.get(url, headers=self.headers, timeout=10)
-                #page = urllib.urlopen(url)
-                #data = page.read()
                 soup = BeautifulSoup(r.text, "html5lib")
                 print soup.get_text()
                 body_data = soup.find('table', attrs={'class':'table table-bordered table-striped'})
@@ -98,6 +96,7 @@ class IP_Proxy_Spider:
                         item.addr = each_data[4].get_text().strip()
                         item.type = each_data[3].get_text().strip().lower()
                         item.anonymous = each_data[2].get_text().strip()
+                        item.source = 'www.kuaidaili.com'
 
                         print item.get_info()
                         if item.type == "http" or item.type == "https":
@@ -134,9 +133,9 @@ class IP_Proxy_Spider:
                         item.addr = each_data[4].get_text().strip()
                         item.type = each_data[6].get_text().strip().lower()
                         item.anonymous = each_data[5].get_text().strip()
+                        item.source = 'www.xicidaili.com'
                         print item.get_info()
 
-                        print each_data[1].get_text().strip(), each_data[1].get_text().strip()
                         if item.type == "http" or item.type == "https":
                             self.ip_items.append(item)
 
@@ -153,75 +152,110 @@ class IP_Proxy_Spider:
 
         print 'xicidaili success: {} have get {} items'.format('\n', len(self.ip_items))
 
-    # 有代理
-    def parse_youdaili(self):
+    # # 有代理
+    # def parse_youdaili(self):
+    #
+    #     def parse_one_page(url):
+    #         try:
+    #             r = requests.get(url, headers=self.headers, timeout=10)
+    #             soup = BeautifulSoup(r.text, "html5lib")
+    #             print soup.get_text()
+    #             body_data = soup.find('table', attrs={'id':'ip_list'})
+    #             res_list = body_data.find_all('tr')
+    #             for res in res_list:
+    #                 each_data = res.find_all('td')
+    #                 if len(each_data) > 6 and '.' in each_data[2].get_text():
+    #
+    #                     item = IPItem()
+    #                     item.ip = each_data[2].get_text().strip()
+    #                     item.port = each_data[3].get_text().strip()
+    #                     item.addr = each_data[4].get_text().strip()
+    #                     item.type = each_data[6].get_text().strip().lower()
+    #                     item.anonymous = each_data[5].get_text().strip()
+    #                     print item.get_info()
+    #
+    #                     if item.type == "http" or item.type == "https":
+    #                         self.ip_items.append(item)
+    #
+    #         except Exception,e:
+    #             print e
+    #
+    #     def get_urls(url_origin):
+    #
+    #         urls = []
+    #
+    #         try:
+    #             r = requests.get(url_origin, header=self.headers)
+    #             soup = BeautifulSoup(r.text, "html5lib")
+    #             ulNewsList= soup.find('ul', {'class':'newslist_line'})
+    #             if ulNewsList:
+    #                 liAll = ulNewsList.find_all('li')
+    #                 for li in liAll:
+    #                     try:
+    #                         data_a = li.find('a')
+    #                         href = data_a['href']
+    #                         urls.append(href)
+    #                     except Exception,e:
+    #                         print e
+    #         except Exception,e:
+    #             print e
+    #
+    #         return urls
+    #
+    #
+    #     url_youdaili_origin = 'http://www.youdaili.net/Daili/guonei/'
+    #     urls = get_urls(url_youdaili_origin)
+    #
+    #     #ips = re.findall('\d+.\d+.\d+:\d+@HTTPS', r.text)
+    #
+    #     for i in range(1, self.count+1):
+    #         #url = url_xici.format(pid=i)
+    #         #parse_one_page(url)
+    #
+    #         self._page_wait(i)
+    #
+    #
+    #     print 'youdaili success: {} have get {} items'.format('\n', len(self.ip_items))
+
+    # 66ip代理
+    def parse_66ip(self):
 
         def parse_one_page(url):
             try:
                 r = requests.get(url, headers=self.headers, timeout=10)
+                r.encoding = 'utf8'
                 soup = BeautifulSoup(r.text, "html5lib")
                 print soup.get_text()
-                body_data = soup.find('table', attrs={'id':'ip_list'})
+                body_data = soup.find('table', attrs={'width':'100%'})
                 res_list = body_data.find_all('tr')
                 for res in res_list:
                     each_data = res.find_all('td')
-                    if len(each_data) > 6 and '.' in each_data[2].get_text():
+                    if len(each_data) > 4 and '.' in each_data[0].get_text():
 
                         item = IPItem()
-                        item.ip = each_data[2].get_text().strip()
-                        item.port = each_data[3].get_text().strip()
-                        item.addr = each_data[4].get_text().strip()
-                        item.type = each_data[6].get_text().strip().lower()
-                        item.anonymous = each_data[5].get_text().strip()
+                        item.ip = each_data[0].get_text().strip()
+                        item.port = each_data[1].get_text().strip()
+                        item.addr = each_data[2].get_text().strip()
+                        item.type = 'http'
+                        item.anonymous = each_data[3].get_text().strip()
+                        item.source = 'www.66ip.cn'
+
                         print item.get_info()
 
-                        print each_data[1].get_text().strip(), each_data[1].get_text().strip()
                         if item.type == "http" or item.type == "https":
                             self.ip_items.append(item)
 
             except Exception,e:
                 print e
 
-        def get_urls(url_origin):
-
-            urls = []
-
-            try:
-                r = requests.get(url_origin, header=self.headers)
-                soup = BeautifulSoup(r.text, "html5lib")
-                ulNewsList= soup.find('ul', {'class':'newslist_line'})
-                if ulNewsList:
-                    liAll = ulNewsList.find_all('li')
-                    for li in liAll:
-                        try:
-                            data_a = li.find('a')
-                            href = data_a['href']
-                            urls.append(href)
-                        except Exception,e:
-                            print e
-            except Exception,e:
-                print e
-
-            return urls
-
-
-        url_youdaili_origin = 'http://www.youdaili.net/Daili/guonei/'
-        urls = get_urls(url_youdaili_origin)
-
-        #ips = re.findall('\d+.\d+.\d+:\d+@HTTPS', r.text)
-
+        url_xici = 'http://www.66ip.cn/areaindex_1/{pid}.html'
         for i in range(1, self.count+1):
-            #url = url_xici.format(pid=i)
-            #parse_one_page(url)
+            url = url_xici.format(pid=i)
+            parse_one_page(url)
 
             self._page_wait(i)
 
-
-        print 'youdaili success: {} have get {} items'.format('\n', len(self.ip_items))
-
-    # 66ip代理
-    def parse_66ip(self):
-        url_xici = 'http://www.66ip.cn/areaindex_1/1.html'
+        print '66ip success: {} have get {} items'.format('\n', len(self.ip_items))
 
 
     def _page_wait(self, now_page):
@@ -308,10 +342,12 @@ class IP_Proxy_Spider:
     def save_data(self):
         df = DataFrame({'IP':[item.ip for item in self.ip_items],
                         'Port':[item.port for item in self.ip_items],
-                       # 'Addr':[item.addr for item in self.ip_items],
+                        'Addr':[item.addr for item in self.ip_items],
                         'Type':[item.type for item in self.ip_items],
-                        'Speed':[item.speed for item in self.ip_items]
-                        }, columns=['IP', 'Port', 'Type', 'Speed'])
+                        'Speed':[item.speed for item in self.ip_items],
+                        'Anonymous':[item.anonymous for item in self.ip_items],
+                        'Source':[item.source for item in self.ip_items],
+                        }, columns=['IP', 'Port', 'Type', 'Anonymous','Speed','Source'])
 
         df['Time'] = GetNowTime()
 
@@ -343,6 +379,7 @@ class IPItem:
         self.type = ''  # 类型:http, https
         self.anonymous = '' # 匿名度
         self.speed = -1 #速度
+        self.source = ''
     def get_info(self):
         return '{}://{}:{}  {}'.format(self.type, self.ip, self.port, self.addr)
 
