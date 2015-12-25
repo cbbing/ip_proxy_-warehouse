@@ -65,7 +65,6 @@ class IP_Proxy_Spider:
                         item.source = 'www.haodailiip.com'
 
                         if 'http' in item.type and '匿' in item.anonymous:
-                            item.anonymous = '高匿' #规整化
                             print item.get_info()
                             self.ip_items.append(item)
 
@@ -104,7 +103,6 @@ class IP_Proxy_Spider:
                         item.source = 'www.kuaidaili.com'
 
                         if 'http' in item.type and '匿' in item.anonymous:
-                            item.anonymous = '高匿' #规整化
                             print item.get_info()
                             self.ip_items.append(item)
 
@@ -145,7 +143,7 @@ class IP_Proxy_Spider:
                         print item.get_info()
 
                         if 'http' in item.type and '匿' in item.anonymous:
-                            item.anonymous = '高匿' #规整化
+
                             print item.get_info()
                             self.ip_items.append(item)
 
@@ -252,7 +250,6 @@ class IP_Proxy_Spider:
                         item.source = 'www.66ip.cn'
 
                         if 'http' in item.type and '匿' in item.anonymous:
-                            item.anonymous = '高匿' #规整化
                             print item.get_info()
                             self.ip_items.append(item)
 
