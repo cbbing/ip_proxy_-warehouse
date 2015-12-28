@@ -13,7 +13,7 @@ import pandas as pd
 import requests
 
 from bs4 import BeautifulSoup
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from subprocess import *
 from multiprocessing.dummy import Pool as ThreadPool
 from multiprocessing import Pool
@@ -371,27 +371,36 @@ class IP_Proxy_Spider:
                     ip_item.speed = -2
 
     def save_data(self, ip_items):
-        df = DataFrame({'IP':[item.ip for item in ip_items],
-                        'Port':[item.port for item in ip_items],
-                        'Addr':[item.addr for item in ip_items],
-                        'Type':[item.type for item in ip_items],
-                        'Speed':[item.speed for item in ip_items],
-                        'Anonymous':[item.anonymous for item in ip_items],
-                        'Source':[item.source for item in ip_items],
-                        }, columns=['IP', 'Port', 'Type', 'Anonymous','Speed','Source'])
 
-        df['CreateTime'] = GetNowTime()
-        df['UpdateTime'] = ''
+        sql = 'select distinct IP, Port from {}'.format(mysql_table_ip)
+        df = pd.read_sql_query(sql, engine)
+        list_ip_and_port = df.get_values()
 
-        #df = df.applymap(lambda x : encode_wrap(x))
-        print df[:10]
-        #df = df.sort_index(by='Speed')
+        for ip_item in ip_items:
+            if not (ip_item.ip, ip_item.port) in list_ip_and_port:
+                ip_item.to_sql()
 
-        #file_name = self.dir_path +'ip_proxy_' + GetNowDate()
-        #df.to_csv(file_name + '.csv')
-        #df.to_excel( 'ip.xlsx', index=False)
-
-        df.to_sql(mysql_table_ip, engine, if_exists='append', index=False)
+        # df = DataFrame({'IP':[item.ip for item in ip_items],
+        #                 'Port':[item.port for item in ip_items],
+        #                 'Addr':[item.addr for item in ip_items],
+        #                 'Type':[item.type for item in ip_items],
+        #                 'Speed':[item.speed for item in ip_items],
+        #                 'Anonymous':[item.anonymous for item in ip_items],
+        #                 'Source':[item.source for item in ip_items],
+        #                 }, columns=['IP', 'Port', 'Type', 'Anonymous','Speed','Source'])
+        #
+        # df['CreateTime'] = GetNowTime()
+        # df['UpdateTime'] = ''
+        #
+        # #df = df.applymap(lambda x : encode_wrap(x))
+        # print df[:10]
+        # #df = df.sort_index(by='Speed')
+        #
+        # #file_name = self.dir_path +'ip_proxy_' + GetNowDate()
+        # #df.to_csv(file_name + '.csv')
+        # #df.to_excel( 'ip.xlsx', index=False)
+        #
+        # df.to_sql(mysql_table_ip, engine, if_exists='append', index=False)
 
     @fn_timer_
     def run_add(self):
@@ -469,6 +478,15 @@ class IPItem:
         self.create_time = se['CreateTime']
         self.update_time = se['UpdateTime']
 
+    def to_sql(self):
+
+        self.create_time = GetNowTime()
+
+        se = Series([self.ip, self.port, self.addr, self.type, self.speed, self.anonymous,
+                     self.source, self.create_time, self.update_time],
+                    index=['IP','Port','Addr','Type','Speed','Anonymous','Source','CreateTime','UpdateTime'])
+
+        se.to_sql(mysql_table_ip, engine, if_exists='append', index=False)
 
 
 
