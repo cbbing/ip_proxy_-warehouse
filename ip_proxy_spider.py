@@ -89,7 +89,7 @@ class IP_Proxy_Spider:
 
             self._page_wait(i)
 
-        print 'haodaili success: {} have get {} items'.format('', len(self.ip_items))
+        print 'haodaili success: {} have get {} items'.format('', len(ip_items))
 
         return ip_items
 
@@ -131,7 +131,7 @@ class IP_Proxy_Spider:
 
             self._page_wait(i)
 
-        print 'kuaidaili success: {} have get {}items'.format('', len(self.ip_items))
+        print 'kuaidaili success: {} have get {}items'.format('', len(ip_items))
 
         return ip_items
 
@@ -178,7 +178,7 @@ class IP_Proxy_Spider:
             self._page_wait(i)
 
 
-        print 'xicidaili success: {} have get {} items'.format('', len(self.ip_items))
+        print 'xicidaili success: {} have get {} items'.format('', len(ip_items))
 
         return ip_items
 
@@ -205,7 +205,7 @@ class IP_Proxy_Spider:
     #                     print item.get_info()
     #
     #                     if item.type == "http" or item.type == "https":
-    #                         self.ip_items.append(item)
+    #                         ip_items.append(item)
     #
     #         except Exception,e:
     #             print e
@@ -245,7 +245,7 @@ class IP_Proxy_Spider:
     #         self._page_wait(i)
     #
     #
-    #     print 'youdaili success: {} have get {} items'.format('\n', len(self.ip_items))
+    #     print 'youdaili success: {} have get {} items'.format('\n', len(ip_items))
 
     # 66ip代理
     def parse_66ip(self):
@@ -286,7 +286,7 @@ class IP_Proxy_Spider:
 
             self._page_wait(i)
 
-        print '66ip success: {} have get {} items'.format('', len(self.ip_items))
+        print '66ip success: {} have get {} items'.format('', len(ip_items))
 
         return ip_items
 
@@ -308,7 +308,7 @@ class IP_Proxy_Spider:
         pool.join()
 
         #单线程
-        # for index in range(len(self.ip_items)):
+        # for index in range(len(ip_items)):
         #     self.ping_one_ip(index)
         # t2 = time.time()
         # print "Total time running multi: %s seconds" % ( str(t1-t0))
@@ -325,7 +325,7 @@ class IP_Proxy_Spider:
         #
         #
         # tmpItems = []
-        # for item in self.ip_items:
+        # for item in ip_items:
         #
         #     http = str(item.type).lower()
         #     ip_proxy = "%s://%s:%s" % (http, item.ip, item.port)
@@ -339,7 +339,7 @@ class IP_Proxy_Spider:
         #         print ip_proxy, 'Good'
         #     except:
         #         print ip_proxy, 'timeout!'
-        # self.ip_items = tmpItems
+        # ip_items = tmpItems
 
 
 
