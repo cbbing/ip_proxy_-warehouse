@@ -11,7 +11,7 @@ from config import engine, mysql_table_ip
 
 # 获取IP代理地址
 def get_ip_proxy(count=100):
-    sql = 'select * from {0} order by Speed limit {1}'.format(mysql_table_ip, count)
+    sql = 'select * from {0} where Speed > 0 order by Speed limit {1}'.format(mysql_table_ip, count)
     df = pd.read_sql_query(sql, engine)
     return df[['IP', 'Port', 'Type']].get_values()
 

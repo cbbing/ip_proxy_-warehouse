@@ -29,21 +29,32 @@ class IP_Proxy_Spider:
 
         self.count = 10
         self.wait_time = 5 # second
-        self.ip_items = []
+        #self.ip_items = []
         self.dir_path = './data/'
 
         self.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36'}
 
 
-    #
+    # parse ip web
     def parse(self):
-        self.parse_haodaili()
-        self.parse_kuaidaili()
-        self.parse_xici()
-        self.parse_66ip()
+
+        ip_items_haodaili =self.parse_haodaili()
+        ip_items_kuaidaili = self.parse_kuaidaili()
+        ip_items_xici = self.parse_xici()
+        ip_items_66 = self.parse_66ip()
+
+        ip_items = []
+        ip_items.extend(ip_items_haodaili)
+        ip_items.extend(ip_items_kuaidaili)
+        ip_items.extend(ip_items_xici)
+        ip_items.extend(ip_items_66)
+
+        return ip_items
 
     # 好代理
     def parse_haodaili(self):
+
+        ip_items = []
 
         def parse_one_page(url):
             try:
@@ -66,7 +77,7 @@ class IP_Proxy_Spider:
 
                         if 'http' in item.type and '匿' in item.anonymous:
                             print item.get_info()
-                            self.ip_items.append(item)
+                            ip_items.append(item)
 
             except Exception,e:
                 print e
@@ -80,8 +91,12 @@ class IP_Proxy_Spider:
 
         print 'haodaili success: {} have get {} items'.format('', len(self.ip_items))
 
+        return ip_items
+
     # 快代理
     def parse_kuaidaili(self):
+
+        ip_items = []
 
         def parse_one_page(url):
             try:
@@ -104,7 +119,7 @@ class IP_Proxy_Spider:
 
                         if 'http' in item.type and '匿' in item.anonymous:
                             print item.get_info()
-                            self.ip_items.append(item)
+                            ip_items.append(item)
 
             except Exception,e:
                 print e
@@ -118,8 +133,12 @@ class IP_Proxy_Spider:
 
         print 'kuaidaili success: {} have get {}items'.format('', len(self.ip_items))
 
+        return ip_items
+
     # 西刺代理
     def parse_xici(self):
+
+        ip_items = []
 
         def parse_one_page(url):
             try:
@@ -145,7 +164,7 @@ class IP_Proxy_Spider:
                         if 'http' in item.type and '匿' in item.anonymous:
 
                             print item.get_info()
-                            self.ip_items.append(item)
+                            ip_items.append(item)
 
 
             except Exception,e:
@@ -160,6 +179,8 @@ class IP_Proxy_Spider:
 
 
         print 'xicidaili success: {} have get {} items'.format('', len(self.ip_items))
+
+        return ip_items
 
     # # 有代理
     # def parse_youdaili(self):
@@ -229,6 +250,8 @@ class IP_Proxy_Spider:
     # 66ip代理
     def parse_66ip(self):
 
+        ip_items = []
+
         def parse_one_page(url):
             try:
                 r = requests.get(url, headers=self.headers, timeout=10)
@@ -251,7 +274,7 @@ class IP_Proxy_Spider:
 
                         if 'http' in item.type and '匿' in item.anonymous:
                             print item.get_info()
-                            self.ip_items.append(item)
+                            ip_items.append(item)
 
             except Exception,e:
                 print e
@@ -265,6 +288,7 @@ class IP_Proxy_Spider:
 
         print '66ip success: {} have get {} items'.format('', len(self.ip_items))
 
+        return ip_items
 
     def _page_wait(self, now_page):
         if (now_page < self.count):
@@ -275,11 +299,11 @@ class IP_Proxy_Spider:
 
 
     @fn_timer_
-    def test_ip_speed(self):
+    def test_ip_speed(self, ip_items):
 
         #多线程
         pool = ThreadPool(processes=20)
-        pool.map(self.ping_one_ip, range(len(self.ip_items)))
+        pool.map(self.ping_one_ip, ip_items)
         pool.close()
         pool.join()
 
@@ -290,9 +314,10 @@ class IP_Proxy_Spider:
         # print "Total time running multi: %s seconds" % ( str(t1-t0))
         # print "Total time running single: %s seconds" % ( str(t2-t1))
 
-        print len(self.ip_items)
-        self.ip_items = [item for item in self.ip_items if item.speed >=0 and item.speed < 1500.0]    # 超时1.5s以内
-        print len(self.ip_items)
+        print len(ip_items)
+        ip_items = [item for item in ip_items if item.speed >=0 and item.speed < 1500.0]    # 超时1.5s以内
+        print len(ip_items)
+
 
         # s = requests.Session()
         #
@@ -318,46 +343,45 @@ class IP_Proxy_Spider:
 
 
 
-    def ping_one_ip(self, index):
+    def ping_one_ip(self, ip_item):
         systemName = platform.system()
         if systemName == 'Windows':
             #p = Popen(["ping.exe",item.ip], stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
-            p = Popen("ping.exe %s -n 1" % (self.ip_items[index].ip), stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
+            p = Popen("ping.exe %s -n 1" % (ip_item.ip), stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
             out = p.stdout.read().decode('gbk').encode('utf8')
 
             m = re.search(u'=(\d+)ms', out)
             if m:
-                s_r = self.ip_items[index].ip + ' time=' + m.group(1) + 'ms'
-                print s_r
-                self.ip_items[index].speed = float(m.group(1))
+                print ip_item.ip + ' time=' + m.group(1) + 'ms'
+                ip_item.speed = float(m.group(1))
             else:
-                s_r = self.ip_items[index].ip + ' time out'
-                print s_r
+                print ip_item.ip + ' time out'
+                ip_item.speed = -2
 
         else:
-            (command_output, exitstatus) = pexpect.run("ping -c1 %s" % self.ip_items[index].ip, timeout=5, withexitstatus=1)
+            (command_output, exitstatus) = pexpect.run("ping -c1 %s" % ip_item.ip, timeout=5, withexitstatus=1)
             if exitstatus == 0:
                 print command_output
                 m = re.search("time=([\d\.]+)", command_output)
                 if m:
-                    s_r = self.ip_items[index].ip + ' time=' + m.group(1) + 'ms'
-                    print s_r
-                    self.ip_items[index].speed = float(m.group(1))
+                    print ip_item.ip + ' time=' + m.group(1) + 'ms'
+                    ip_item.speed = float(m.group(1))
                 else:
-                    s_r = self.ip_items[index].ip + ' time out'
-                    print s_r
+                    print ip_item.ip + ' time out'
+                    ip_item.speed = -2
 
-    def save_data(self):
-        df = DataFrame({'IP':[item.ip for item in self.ip_items],
-                        'Port':[item.port for item in self.ip_items],
-                        'Addr':[item.addr for item in self.ip_items],
-                        'Type':[item.type for item in self.ip_items],
-                        'Speed':[item.speed for item in self.ip_items],
-                        'Anonymous':[item.anonymous for item in self.ip_items],
-                        'Source':[item.source for item in self.ip_items],
+    def save_data(self, ip_items):
+        df = DataFrame({'IP':[item.ip for item in ip_items],
+                        'Port':[item.port for item in ip_items],
+                        'Addr':[item.addr for item in ip_items],
+                        'Type':[item.type for item in ip_items],
+                        'Speed':[item.speed for item in ip_items],
+                        'Anonymous':[item.anonymous for item in ip_items],
+                        'Source':[item.source for item in ip_items],
                         }, columns=['IP', 'Port', 'Type', 'Anonymous','Speed','Source'])
 
-        df['Time'] = GetNowTime()
+        df['CreateTime'] = GetNowTime()
+        df['UpdateTime'] = ''
 
         #df = df.applymap(lambda x : encode_wrap(x))
         print df[:10]
@@ -370,14 +394,57 @@ class IP_Proxy_Spider:
         df.to_sql(mysql_table_ip, engine, if_exists='append', index=False)
 
     @fn_timer_
-    def run(self):
+    def run_add(self):
 
-        self.parse()
+        ip_items = self.parse()
         print 'test speed begin...'
-        self.test_ip_speed()
+        self.test_ip_speed(ip_items)
         print 'test speed end'
 
-        self.save_data()
+        self.save_data(ip_items)
+
+    @fn_timer_
+    def check_useful_in_db(self):
+
+        # 更新数据库中的IP Speed
+        def update_ip_speed_to_db(ip_item):
+            print ip_item.get_info()
+            self.ping_one_ip(ip_item)
+            print ip_item.get_info()
+            sql = "update {table} set Speed={speed}, UpdateTime='{update_time}' " \
+                    "where IP='{ip}' and Port='{port}'".format(
+                        table=mysql_table_ip,
+                        speed=ip_item.speed,
+                        update_time=GetNowTime(),
+                        ip=ip_item.ip,
+                        port=ip_item.port)
+            print engine.execute(sql)
+
+
+        ip_items = []
+
+        df = pd.read_sql_table(mysql_table_ip, engine)
+        for ix, row in df.iterrows():
+            print type(ix), type(row)
+            print ix, row
+            ip_item = IPItem()
+            ip_item.init_from_series(row)
+            ip_items.append(ip_item)
+
+        #多线程
+        pool = ThreadPool(processes=10)
+        pool.map(update_ip_speed_to_db, ip_items)
+        pool.close()
+        pool.join()
+
+        print 'update speed success!'
+
+
+
+
+
+
+
 
 class IPItem:
     def __init__(self):
@@ -388,10 +455,30 @@ class IPItem:
         self.anonymous = '' # 匿名度
         self.speed = -1 #速度
         self.source = ''
+        self.create_time = ''
+        self.update_time = ''
+
+    def init_from_series(self, se):
+        self.ip = se['IP']
+        self.port = se['Port']
+        self.type = se['Type']
+        self.addr = se['Addr']
+        self.anonymous = se['Anonymous']
+        self.speed = se['Speed']
+        self.source = se['Source']
+        self.create_time = se['CreateTime']
+        self.update_time = se['UpdateTime']
+
+
+
+
     def get_info(self):
         return encode_wrap('{0}://{1}:{2}; {3},{4}, {5}ms, {6}'.format(
             self.type, self.ip, self.port, self.addr, self.anonymous, self.speed, self.source))
 
 if __name__ == "__main__":
     spider = IP_Proxy_Spider()
-    spider.run()
+    if len(sys.argv) == 2:
+        spider.run_add()
+    elif len(sys.argv) == 3:
+        spider.check_useful_in_db()
