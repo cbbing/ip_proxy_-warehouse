@@ -1,9 +1,7 @@
 #coding:utf-8
 __author__ = 'cbb'
 
-import platform, os, sys
 from sqlalchemy import create_engine
-from util.MyLogger import Logger
 
 # mysql Host
 host_mysql = 'rdsw5ilfm0dpf8lee609.mysql.rds.aliyuncs.com'

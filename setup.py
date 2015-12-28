@@ -6,5 +6,5 @@ setup(name='IpProxy',
     author='Binger',
     author_email='cbbing@163.com',
     url='http://www.kekefund.com',
-    py_modules=['ip_porxy', 'config'],
+    py_modules=['ip_proxy'],
     )
