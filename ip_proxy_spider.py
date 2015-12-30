@@ -37,16 +37,18 @@ class IP_Proxy_Spider:
 
     # parse ip web
     def parse(self):
+        ip_items = []
 
         ip_items_haodaili =self.parse_haodaili()
-        ip_items_kuaidaili = self.parse_kuaidaili()
-        ip_items_xici = self.parse_xici()
-        ip_items_66 = self.parse_66ip()
-
-        ip_items = []
         ip_items.extend(ip_items_haodaili)
+
+        ip_items_kuaidaili = self.parse_kuaidaili()
         ip_items.extend(ip_items_kuaidaili)
+
+        ip_items_xici = self.parse_xici()
         ip_items.extend(ip_items_xici)
+        #
+        ip_items_66 = self.parse_66ip()
         ip_items.extend(ip_items_66)
 
         return ip_items
@@ -279,7 +281,16 @@ class IP_Proxy_Spider:
             except Exception,e:
                 print e
 
+        # beijing
         url_xici = 'http://www.66ip.cn/areaindex_1/{pid}.html'
+        for i in range(1, self.count+1):
+            url = url_xici.format(pid=i)
+            parse_one_page(url)
+
+            self._page_wait(i)
+
+        # shanghai
+        url_xici = 'http://www.66ip.cn/areaindex_2/{pid}.html'
         for i in range(1, self.count+1):
             url = url_xici.format(pid=i)
             parse_one_page(url)
@@ -482,11 +493,18 @@ class IPItem:
 
         self.create_time = GetNowTime()
 
-        se = Series([self.ip, self.port, self.addr, self.type, self.speed, self.anonymous,
-                     self.source, self.create_time, self.update_time],
-                    index=['IP','Port','Addr','Type','Speed','Anonymous','Source','CreateTime','UpdateTime'])
+        df = DataFrame({'IP':[self.ip],
+                        'Port':[self.port],
+                        'Addr':[self.addr],
+                        'Type':[self.type],
+                        'Speed':[self.speed],
+                        'Anonymous':[self.anonymous],
+                        'Source':[self.source],
+                       'CreateTime':[self.create_time],
+                         'UpdateTime':[self.update_time]},
+                       columns=['IP','Port','Addr','Type','Speed','Anonymous','Source','CreateTime','UpdateTime'])
 
-        se.to_sql(mysql_table_ip, engine, if_exists='append', index=False)
+        df.to_sql(mysql_table_ip, engine, if_exists='append', index=False)
 
 
 
