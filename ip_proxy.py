@@ -4,17 +4,18 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 import pandas as pd
+import base64
 
 from sqlalchemy import create_engine
 
 # mysql Host
 host_mysql = 'rdsw5ilfm0dpf8lee609.mysql.rds.aliyuncs.com'
 port_mysql = '3306'
-user_mysql = 'licj_read'
-pwd_mysql = '12356789'
+user_mysql = 'bGljal9yZWFk\n'
+pwd_mysql = 'MTIzNTY3ODk=\n'
 db_name_mysql = 'wealth_db'
 
-engine = create_engine('mysql+mysqldb://%s:%s@%s:%s/%s' % (user_mysql, pwd_mysql, host_mysql, port_mysql, db_name_mysql), connect_args={'charset':'utf8'})
+engine = create_engine('mysql+mysqldb://%s:%s@%s:%s/%s' % (base64.decodestring(user_mysql), base64.decodestring(pwd_mysql), host_mysql, port_mysql, db_name_mysql), connect_args={'charset':'utf8'})
 
 mysql_table_ip = 'ip_proxy'
 

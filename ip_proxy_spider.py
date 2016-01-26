@@ -330,8 +330,8 @@ class IP_Proxy_Spider:
         print len(ip_items)
 
 
-        # s = requests.Session()
-        #
+        #s = requests.Session()
+
         # headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36'}
         #
         #
@@ -346,6 +346,7 @@ class IP_Proxy_Spider:
         #
         #         r = requests.get("http://www.baidu.com", proxies=proxies, headers=headers, timeout=10)
         #         print r.status_code
+        #         item.speed = 300
         #         tmpItems.append(item)
         #         print ip_proxy, 'Good'
         #     except:
@@ -354,7 +355,25 @@ class IP_Proxy_Spider:
 
 
 
-    def ping_one_ip(self, ip_item):
+    def ping_one_ip(self, item):
+
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.57 Safari/537.36'}
+
+        http = str(item.type).lower()
+        ip_proxy = "%s://%s:%s" % (http, item.ip, item.port)
+        proxies = {http:ip_proxy}
+        print proxies
+        try:
+            r = requests.get("http://www.baidu.com", proxies=proxies, headers=headers, timeout=10)
+            print r.status_code
+            item.speed = 300
+
+            print ip_proxy, 'Good'
+        except:
+            print ip_proxy, 'timeout!'
+
+        return
+
         systemName = platform.system()
         if systemName == 'Windows':
             #p = Popen(["ping.exe",item.ip], stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True)
@@ -452,7 +471,7 @@ class IP_Proxy_Spider:
             ip_items.append(ip_item)
 
         #多线程
-        pool = ThreadPool(processes=10)
+        pool = ThreadPool(processes=1)
         pool.map(update_ip_speed_to_db, ip_items)
         pool.close()
         pool.join()
