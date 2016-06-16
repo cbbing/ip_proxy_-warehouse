@@ -367,9 +367,9 @@ class IP_Proxy_Spider:
             r = requests.get("http://www.baidu.com", proxies=proxies, headers=headers, timeout=10)
             print r.status_code
             item.speed = 300
-
             print ip_proxy, 'Good'
         except:
+            item.speed = -2
             print ip_proxy, 'timeout!'
 
         return
@@ -471,7 +471,7 @@ class IP_Proxy_Spider:
             ip_items.append(ip_item)
 
         #多线程
-        pool = ThreadPool(processes=1)
+        pool = ThreadPool(processes=10)
         pool.map(update_ip_speed_to_db, ip_items)
         pool.close()
         pool.join()
